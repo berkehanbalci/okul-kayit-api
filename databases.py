@@ -23,7 +23,7 @@ def veritabani_hazirla():
             id INTEGER PRIMARY KEY,
             ad TEXT,
             soyad TEXT,
-            telefon_no VARCHAR,
+            telefon_no VARCHAR(11),
             mail TEXT,
             fakulte TEXT,
             bolum TEXT,
@@ -36,15 +36,27 @@ def veritabani_hazirla():
             id INTEGER PRIMARY KEY,
             ad TEXT,
             soyad TEXT,
-            telefon_no VARCHAR,
+            telefon_no VARCHAR(11),
             mail TEXT,
             fakulte TEXT,
             bolum TEXT)
     """)
 
     imlec.execute("""
+        CREATE TABLE IF NOT EXISTS fakulteler(
+            id SERIAL PRIMARY KEY,
+            ad TEXT UNIQUE)
+    """)
+
+    imlec.execute("""
+        CREATE TABLE IF NOT EXISTS bolumler(
+            id SERIAL PRIMARY KEY,
+            ad TEXT UNIQUE)
+    """)
+
+    imlec.execute("""
         CREATE TABLE IF NOT EXISTS yoneticiler(
-            id INTEGER PRIMARY KEY,
+            id SERIAL PRIMARY KEY,
             kullanici_adi TEXT UNIQUE,
             sifre_hash TEXT)
     """)
