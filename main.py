@@ -172,12 +172,14 @@ def detayli_ogrenci_fakulte_raporu():
 
     for fakulte_adi, fakulte_verisi in gecici_rapor.items():
 
-        nihai_rapor.append({
+        rapor = {
             "fakulte_id": fakulte_verisi["fakulte_id"],
             "fakulte_adi": fakulte_adi,
             "fakulte_toplam_ogreci": fakulte_verisi["fakulte_toplam"],
             "bolumler_ve_toplam_ogrenci_sayisi": fakulte_verisi["bolumler_listesi"]
-        })
+        }
 
-    return nihai_rapor       
+        nihai_rapor.append(rapor)
+
+    return nihai_rapor      
 
