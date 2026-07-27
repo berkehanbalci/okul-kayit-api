@@ -128,3 +128,56 @@ def ogretmen_bilgisi(ogretmen_id: int):
         "bolum" : satir[6]
     }    
 
+@app.get("/ogrenci-fakulte-bolum-raporu")
+def detayli_ogrenci_fakulte_raporu():
+    baglanti = veritabani_baglan()
+    imlec = baglanti.cursor()
+    imlec.execute("""
+        SELECT f.id AS fakulte_id, f.ad AS fakulte_adi, b.id AS bolum_id, b.ad AS bolum_adi, COUNT(ogrci.id) AS toplam_ogrenci
+        FROM ogrenciler ogrci
+        INNER JOIN fakulteler f ON ogrci.fakulte = f.ad
+        INNER JOIN bolumler b ON ogrci.bolum = b.ad
+        GROUP BY f.id, f.ad, b.id, b.ad
+        ORDER BY f.ad ASC
+    """)
+
+    satirlar = imlec.fetchall()
+    baglanti.close()
+
+    gecici_rapor = {}
+
+    for satir in satirlar:
+        fakulte_id = satir[0]
+        fakulte = satir[1]
+        bolum_id = satir[2]
+        bolum = satir [3]
+        sayi = satir[4]
+
+        if fakulte not in gecici_rapor:
+            gecici_rapor[fakulte] = {
+                "fakulte_id" : fakulte_id,
+                "fakulte_toplam" : 0,
+                "bolumler_listesi": []
+            }
+
+        gecici_rapor[fakulte]["fakulte_toplam"] += sayi
+
+        gecici_rapor[fakulte]["bolumler_listesi"].append({
+            "bolum_id": bolum_id,
+            "bolum_adi": bolum,
+            "bolumdeki_toplam_ogrenci": sayi
+        })
+
+    nihai_rapor = []
+
+    for fakulte_adi, fakulte_verisi in gecici_rapor.items():
+
+        nihai_rapor.append({
+            "fakulte_id": fakulte_verisi["fakulte_id"],
+            "fakulte_adi": fakulte_adi,
+            "fakulte_toplam_ogreci": fakulte_verisi["fakulte_toplam"],
+            "bolumler_ve_toplam_ogrenci_sayisi": fakulte_verisi["bolumler_listesi"]
+        })
+
+    return nihai_rapor       
+
