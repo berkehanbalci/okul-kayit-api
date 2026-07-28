@@ -20,8 +20,8 @@ def ogrencileri_listele():
     imlec.execute("""
         SELECT ogrci.id, ogrci.ad, ogrci.soyad, ogrci.telefon_no, ogrci.mail, f.ad AS fakulte_adi, b.ad AS bolum_adi, ogrci.guncel_donem
         FROM ogrenciler ogrci
-        INNER JOIN fakulteler f ON ogrci.fakulte = f.ad
-        INNER JOIN bolumler b ON ogrci.bolum = b.ad
+        INNER JOIN fakulteler f ON ogrci.fakulte_id = f.id
+        INNER JOIN bolumler b ON ogrci.bolum_id = b.id
     """)
     satirlar = imlec.fetchall()
     baglanti.close()
@@ -49,8 +49,8 @@ def ogretmenleri_listele():
     imlec.execute("""
         SELECT ogrme.id, ogrme.ad, ogrme.soyad, ogrme.telefon_no, ogrme.mail, f.ad AS fakulte_adi, b.ad AS bolum_adi
         FROM ogretmenler ogrme
-        INNER JOIN fakulteler f ON ogrme.fakulte = f.ad
-        INNER JOIN bolumler b ON ogrme.bolum = b.ad
+        INNER JOIN fakulteler f ON ogrme.fakulte_id = f.id
+        INNER JOIN bolumler b ON ogrme.bolum_id = b.id
     """)
     satirlar = imlec.fetchall()
     baglanti.close()
@@ -78,8 +78,8 @@ def ogrenci_bilgisi(ogrenci_id: int):
     imlec.execute("""
         SELECT ogrci.id, ogrci.ad, ogrci.soyad, ogrci.telefon_no, ogrci.mail, f.ad AS fakulte_adi, b.ad AS bolum_adi, ogrci.guncel_donem
         FROM ogrenciler ogrci
-        INNER JOIN fakulteler f ON ogrci.fakulte = f.ad
-        INNER JOIN bolumler b ON ogrci.bolum = b.ad
+        INNER JOIN fakulteler f ON ogrci.fakulte_id = f.id
+        INNER JOIN bolumler b ON ogrci.bolum_id = b.id
         WHERE ogrci.id = %s
     """, (ogrenci_id,))
     satir = imlec.fetchone()
@@ -107,8 +107,8 @@ def ogretmen_bilgisi(ogretmen_id: int):
     imlec.execute("""
         SELECT ogrme.id, ogrme.ad, ogrme.soyad, ogrme.telefon_no, ogrme.mail, f.ad AS fakulte_adi, b.ad AS bolum_adi
         FROM ogretmenler ogrme
-        INNER JOIN fakulteler f ON ogrme.fakulte = f.ad
-        INNER JOIN bolumler b ON ogrme.bolum = b.ad
+        INNER JOIN fakulteler f ON ogrme.fakulte_id = f.id
+        INNER JOIN bolumler b ON ogrme.bolum_id = b.id
         WHERE ogrme.id = %s
     """, (ogretmen_id,))
 
@@ -116,7 +116,7 @@ def ogretmen_bilgisi(ogretmen_id: int):
     baglanti.close()
 
     if satir is None:
-        raise HTTPException(status_code=404, detail("Öğretmen bulunamadı!"))
+        raise HTTPException(status_code=404, detail="Öğretmen bulunamadı!")
 
     return {
         "id" : satir[0],
@@ -135,8 +135,8 @@ def detayli_ogrenci_fakulte_raporu():
     imlec.execute("""
         SELECT f.id AS fakulte_id, f.ad AS fakulte_adi, b.id AS bolum_id, b.ad AS bolum_adi, COUNT(ogrci.id) AS toplam_ogrenci
         FROM ogrenciler ogrci
-        INNER JOIN fakulteler f ON ogrci.fakulte = f.ad
-        INNER JOIN bolumler b ON ogrci.bolum = b.ad
+        INNER JOIN fakulteler f ON ogrci.fakulte_id = f.id
+        INNER JOIN bolumler b ON ogrci.bolum_id = b.id
         GROUP BY f.id, f.ad, b.id, b.ad
         ORDER BY f.ad ASC
     """)
@@ -148,21 +148,21 @@ def detayli_ogrenci_fakulte_raporu():
 
     for satir in satirlar:
         fakulte_id = satir[0]
-        fakulte = satir[1]
+        fakulte_ad = satir[1]
         bolum_id = satir[2]
         bolum = satir [3]
         sayi = satir[4]
 
-        if fakulte not in gecici_rapor:
-            gecici_rapor[fakulte] = {
+        if fakulte_ad not in gecici_rapor:
+            gecici_rapor[fakulte_ad] = {
                 "fakulte_id" : fakulte_id,
                 "fakulte_toplam" : 0,
                 "bolumler_listesi": []
             }
 
-        gecici_rapor[fakulte]["fakulte_toplam"] += sayi
+        gecici_rapor[fakulte_ad]["fakulte_toplam"] += sayi
 
-        gecici_rapor[fakulte]["bolumler_listesi"].append({
+        gecici_rapor[fakulte_ad]["bolumler_listesi"].append({
             "bolum_id": bolum_id,
             "bolum_adi": bolum,
             "bolumdeki_toplam_ogrenci": sayi
@@ -182,4 +182,61 @@ def detayli_ogrenci_fakulte_raporu():
         nihai_rapor.append(rapor)
 
     return nihai_rapor      
+
+@app.get("/ogretmen-fakulte_bolum_raporu")
+def detayli_ogretmen_fakulte_raporu():
+    baglanti = veritabani_baglan()
+    imlec = baglanti.cursor()
+
+    imlec.execute("""
+        SELECT f.id AS fakulte_id, f.ad AS fakulte_adi, b.id AS bolum_id, b.ad AS bolum_adi, COUNT(ogrme.id) AS toplam_ogretmen
+        FROM ogretmenler ogrme
+        INNER JOIN fakulteler f ON ogrme.fakulte_id = f.id
+        INNER JOIN bolumler b ON ogrme.bolum_id = b.id
+        GROUP BY f.id, f.ad, b.id, b.ad
+        ORDER BY f.ad ASC
+    """)
+
+    satirlar = imlec.fetchall()
+    baglanti.close()
+
+    gecici_rapor = {}
+
+    for satir in satirlar:
+        fakulte_id = satir[0]
+        fakulte_ad = satir[1]
+        bolum_id = satir[2]
+        bolum_ad = satir[3]
+        sayi = satir[4]
+
+        if fakulte_ad not in gecici_rapor:
+            gecici_rapor[fakulte_ad] = {
+                "fakulte_id": fakulte_id,
+                "fakulte_toplam" : 0,
+                "bolumler_listesi" : []
+            }
+
+        gecici_rapor[fakulte_ad]["fakulte_toplam"] +=  sayi 
+
+        gecici_rapor[fakulte_ad]["bolumler_listesi"].append({
+            "bolum_id": bolum_id,
+            "bolum_ad": bolum_ad,
+            "bolumdeki_toplam_ogretmen": sayi
+        })
+
+    nihai_rapor = []
+
+    for fakulte_adi, fakulte_verisi in gecici_rapor.items():
+        rapor = {
+            "fakulte_id": fakulte_verisi["fakulte_id"],
+            "fakulte_ad": fakulte_adi,
+            "fakulte_toplam_ogretmen": fakulte_verisi["fakulte_toplam"],
+            "bolumler_ve_toplam_ogretmen_sayisi": fakulte_verisi["bolumler_listesi"]
+        }
+
+        nihai_rapor.append(rapor)
+
+    return nihai_rapor        
+
+
 
