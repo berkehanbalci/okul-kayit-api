@@ -236,7 +236,64 @@ def detayli_ogretmen_fakulte_raporu():
 
         nihai_rapor.append(rapor)
 
-    return nihai_rapor        
+    return nihai_rapor 
 
+@app.post("/ogrenciler")
+def yeni_ogrenci_ekle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogrula)):
+    baglanti = veritabani_baglan()
+    imlec = baglanti.cursor()
 
+    imlec.execute("""
+        SELECT id
+        FROM ogrenciler
+        WHERE id = %s
+    """,(ogrenci.ogrenci_id,)
+    )
 
+    sonuc = imlec.fetchone()        
+
+    if sonuc:
+        baglanti.close()
+        raise HTTPException(status_code=409, detail="Bu öğrenci numarası zaten mevcuttur!")
+
+    else:
+        imlec.execute("""
+            SELECT id
+            FROM fakulteler 
+            WHERE id = %s
+
+        """, (ogrenci.fakulte_id,)
+        )
+
+        fakulte_sonuc = imlec.fetchone()
+
+        if fakulte_sonuc:
+            fakulte_id = fakulte_sonuc[0]
+
+            imlec.execute("""
+                SELECT id
+                FROM bolumler
+                WHERE id = %s
+            """, (ogrenci.bolum_id,)
+            )
+            bolum_sonuc = imlec.fetchone()
+
+            if bolum_sonuc:
+                bolum_id = bolum_sonuc[0]
+                imlec.execute(
+                    """INSERT INTO ogrenciler (id, ad, soyad, telefon_no, mail, fakulte_id, bolum_id, guncel_donem)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                    (ogrenci.ogrenci_id, ogrenci.ad, ogrenci.soyad, ogrenci.telefon_no, ogrenci.mail, fakulte_id, bolum_id, ogrenci.guncel_donem)
+                )
+                mesaj = f"{ogrenci.ogrenci_id} numaralı öğrenci sisteme eklendi"
+            else:
+                baglanti.close()
+                raise HTTPException(status_code=404, detail=f"{ogrenci.bolum_id} id numaralı bölüm bulunamadı!")    
+        
+        else:
+            baglanti.close()
+            raise HTTPException(status_code=404, detail=f"{ogrenci.fakulte_id} id numaralı fakülte bulunamadı!")
+    
+    baglanti.commit()
+    baglanti.close()
+    return{"mesaj": mesaj}
