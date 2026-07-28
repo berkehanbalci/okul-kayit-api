@@ -19,39 +19,15 @@ def veritabani_hazirla():
     imlec = baglanti.cursor()
     
     imlec.execute("""
-        CREATE TABLE IF NOT EXISTS ogrenciler(
-            id INTEGER PRIMARY KEY,
-            ad TEXT,
-            soyad TEXT,
-            telefon_no VARCHAR(11),
-            mail TEXT,
-            fakulte TEXT,
-            bolum TEXT,
-            guncel_donem INTEGER
-        )
-    """)
-
-    imlec.execute("""
-        CREATE TABLE IF NOT EXISTS ogretmenler(
-            id INTEGER PRIMARY KEY,
-            ad TEXT,
-            soyad TEXT,
-            telefon_no VARCHAR(11),
-            mail TEXT,
-            fakulte TEXT,
-            bolum TEXT)
-    """)
-
-    imlec.execute("""
         CREATE TABLE IF NOT EXISTS fakulteler(
             id SERIAL PRIMARY KEY,
-            ad TEXT UNIQUE)
+            ad VARCHAR(100) UNIQUE)
     """)
 
     imlec.execute("""
         CREATE TABLE IF NOT EXISTS bolumler(
             id SERIAL PRIMARY KEY,
-            ad TEXT UNIQUE)
+            ad VARCHAR(100) UNIQUE)
     """)
 
     imlec.execute("""
@@ -60,6 +36,32 @@ def veritabani_hazirla():
             kullanici_adi TEXT UNIQUE,
             sifre_hash TEXT)
     """)
+    
+    imlec.execute("""
+        CREATE TABLE IF NOT EXISTS ogrenciler(
+            id INTEGER PRIMARY KEY,
+            ad VARCHAR(100),
+            soyad VARCHAR(100),
+            telefon_no VARCHAR(11),
+            mail VARCHAR(100),
+            fakulte_id INTEGER REFERENCES fakulteler(id),
+            bolum_id INTEGER REFERENCES bolumler(id),
+            guncel_donem VARCHAR(20)
+        )
+    """)
 
+    imlec.execute("""
+        CREATE TABLE IF NOT EXISTS ogretmenler(
+            id INTEGER PRIMARY KEY,
+            ad VARCHAR(100),
+            soyad VARCHAR(100),
+            telefon_no VARCHAR(11),
+            mail VARCHAR(100),
+            fakulte_id INTEGER REFERENCES fakulteler(id),
+            bolum_id  INTEGER REFERENCES bolumler(id)
+            )
+    """)
+
+    
     baglanti.commit()
     baglanti.close()

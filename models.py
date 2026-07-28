@@ -6,9 +6,9 @@ class Ogrenci(BaseModel):
     soyad: str
     telefon_no: str 
     mail: EmailStr
-    fakulte: str
-    bolum: str
-    guncel_donem: int
+    fakulte_id: int
+    bolum_id: int
+    guncel_donem: str
 
 class Ogretmen(BaseModel):
     ogretmen_id: int
@@ -16,8 +16,8 @@ class Ogretmen(BaseModel):
     soyad: str
     telefon_no: str
     mail: EmailStr
-    fakulte: str
-    bolum: str
+    fakulte_id: int
+    bolum_id: int
 
 class Yonetici(BaseModel):
     kullanici_adi: str
