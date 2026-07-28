@@ -23,3 +23,8 @@ class Yonetici(BaseModel):
     kullanici_adi: str
     sifre: str    
 
+class Fakulte(BaseModel):
+    ad: str
+
+class Bolum(BaseModel):
+    ad: str
