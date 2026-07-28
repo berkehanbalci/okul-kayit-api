@@ -254,7 +254,7 @@ def yeni_ogrenci_ekle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogru
 
     if sonuc:
         baglanti.close()
-        raise HTTPException(status_code=409, detail="Bu öğrenci numarası zaten mevcuttur!")
+        raise HTTPException(status_code=409, detail=f"{ogrenci.ogrenci_id} numarası zaten kullanımda!")
 
     else:
         imlec.execute("""
@@ -265,10 +265,10 @@ def yeni_ogrenci_ekle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogru
         """, (ogrenci.fakulte_id,)
         )
 
-        fakulte_sonuc = imlec.fetchone()
+        ogrenci_fakulte_sonuc = imlec.fetchone()
 
-        if fakulte_sonuc:
-            fakulte_id = fakulte_sonuc[0]
+        if ogrenci_fakulte_sonuc:
+            ogrenci_fakulte_id = ogrenci_fakulte_sonuc[0]
 
             imlec.execute("""
                 SELECT id
@@ -276,14 +276,14 @@ def yeni_ogrenci_ekle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogru
                 WHERE id = %s
             """, (ogrenci.bolum_id,)
             )
-            bolum_sonuc = imlec.fetchone()
+            ogrenci_bolum_sonuc = imlec.fetchone()
 
-            if bolum_sonuc:
-                bolum_id = bolum_sonuc[0]
+            if ogrenci_bolum_sonuc:
+                ogrenci_bolum_id = ogrenci_bolum_sonuc[0]
                 imlec.execute(
                     """INSERT INTO ogrenciler (id, ad, soyad, telefon_no, mail, fakulte_id, bolum_id, guncel_donem)
                     VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-                    (ogrenci.ogrenci_id, ogrenci.ad, ogrenci.soyad, ogrenci.telefon_no, ogrenci.mail, fakulte_id, bolum_id, ogrenci.guncel_donem)
+                    (ogrenci.ogrenci_id, ogrenci.ad, ogrenci.soyad, ogrenci.telefon_no, ogrenci.mail, ogrenci_fakulte_id, ogrenci_bolum_id, ogrenci.guncel_donem)
                 )
                 mesaj = f"{ogrenci.ogrenci_id} numaralı öğrenci sisteme eklendi"
             else:
@@ -297,3 +297,63 @@ def yeni_ogrenci_ekle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogru
     baglanti.commit()
     baglanti.close()
     return{"mesaj": mesaj}
+
+@app.post("/ogretmenler")
+def yeni_ogretmen_ekle(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_dogrula)):
+    
+    baglanti = veritabani_baglan()
+    imlec = baglanti.cursor()
+
+    imlec.execute("""
+        SELECT id
+        FROM ogretmenler
+        WHERE id = %s
+    """, (ogretmen.ogretmen_id,))
+
+    sonuc = imlec.fetchone()
+
+    if sonuc:
+        baglanti.close()
+        raise HTTPException(status_code=409, detail=f"{ogretmen.ogretmen_id} numarası zaten kullanımda")
+
+    else:
+        imlec.execute("""
+            SELECT id
+            FROM fakulteler
+            WHERE id = %s
+        """, (ogretmen.fakulte_id,))
+
+        ogretmen_fakulte_sonuc = imlec.fetchone()
+
+        if ogretmen_fakulte_sonuc:
+            ogretmen_fakulte_id = ogretmen_fakulte_sonuc[0]
+
+            imlec.execute("""
+                SELECT id
+                FROM bolumler
+                WHERE id = %s
+            """, (ogretmen.bolum_id,)
+            )
+
+            ogretmen_bolum_sonuc = imlec.fetchone()
+
+            if ogretmen_bolum_sonuc:
+                ogretmen_bolum_id = ogretmen_bolum_sonuc[0]
+
+                imlec.execute(
+                    """INSERT INTO ogretmenler (id, ad, soyad, telefon_no, mail, fakulte_id, bolum_id)
+                    VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                    (ogretmen.ogretmen_id, ogretmen.ad, ogretmen.soyad, ogretmen.telefon_no, ogretmen.mail, ogretmen_fakulte_id, ogretmen_bolum_id)
+                )
+                mesaj = f"{ogretmen.ogretmen_id} numaralı öğretmen sisteme eklendi"
+            else:
+                baglanti.close()
+                raise HTTPException(status_code=404, detail=f"{ogretmen.bolum_id} id numaralı bölüm bulunamadı!")
+        
+        else:
+            baglanti.close()
+            raise HTTPException(status_code=404, detail=f"{ogretmen.fakulte_id} id numaralı fakülte bulunamadı!")
+
+    baglanti.commit()
+    baglanti.close()
+    return {"mesaj": mesaj}        
