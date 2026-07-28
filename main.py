@@ -1,5 +1,5 @@
 from database import veritabani_hazirla, veritabani_baglan
-from models import Ogrenci, Ogretmen
+from models import Ogrenci, Ogretmen, Fakulte, Bolum
 from fastapi import FastAPI, HTTPException, Depends
 from auth import router as auth_router, token_dogrula
 
@@ -356,4 +356,59 @@ def yeni_ogretmen_ekle(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_do
 
     baglanti.commit()
     baglanti.close()
-    return {"mesaj": mesaj}        
+    return {"mesaj": mesaj}
+
+@app.post("/fakulteler")
+def fakulte_ekle(fakulte: Fakulte, kullanici_adi: str = Depends(token_dogrula)):
+
+    baglanti = veritabani_baglan()
+    imlec = baglanti.cursor()
+
+    imlec.execute("""
+        SELECT id
+        FROM fakulteler
+        WHERE ad = %s
+    """, (fakulte.ad,))
+
+    fakulte_ekle_sonuc = imlec.fetchone()
+
+    if fakulte_ekle_sonuc:
+        baglanti.close()
+        raise HTTPException(status_code=409, detail=f"{fakulte.ad} fakültesi zaten mevcut!")
+
+    else:
+        imlec.execute("""
+        INSERT INTO fakulteler (ad) VALUES (%s)""", (fakulte.ad,))
+
+        mesaj = f"{fakulte.ad} fakültesi sisteme eklendi"   
+
+    baglanti.commit()
+    baglanti.close()
+    return {"mesaj": mesaj}
+
+@app.post("/bolumler")
+def bolum_ekle(bolum: Bolum, kullanici_adi: str = Depends(token_dogrula)):
+    baglanti = veritabani_baglan()
+    imlec = baglanti.cursor()
+
+    imlec.execute("""
+        SELECT id
+        FROM bolumler
+        WHERE ad = %s
+    """, (bolum.ad, ))
+
+    bolum_ekle_sonuc = imlec.fetchone()
+
+    if bolum_ekle_sonuc:
+        baglanti.close()
+        raise HTTPException(status_code=409, detail=f"{bolum.ad} bölümü zaten mevcut!")
+
+    else:
+        imlec.execute("""
+        INSERT INTO bolumler (ad) VALUES (%s)""", (bolum.ad,))
+
+        mesaj = f"{bolum.ad} bölümü sisteme eklendi"
+
+    baglanti.commit()
+    baglanti.close()
+    return {"mesaj": mesaj}    
