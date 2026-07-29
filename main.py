@@ -576,4 +576,44 @@ def ogretmen_sil(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_dogrula)
 
     baglanti.commit()
     baglanti.close()
-    return {"mesaj": mesaj}         
+    return {"mesaj": mesaj}
+
+@app.delete("/bolum/sil")
+def bolum_sil(bolum_id: int, kullanici_adi: str = Depends(token_dogrula)):
+    baglanti = veritabani_baglan()
+    imlec = baglanti.cursor()
+
+    imlec.execute("""
+        SELECT id
+        FROM ogrenciler
+        WHERE bolum_id = %s
+    """, (bolum_id, ))
+
+    ogrenci_icin_sonuc = imlec.fetchone()
+
+    if ogrenci_icin_sonuc is not None:
+        baglanti.close()
+        raise HTTPException(status_code=409, detail="Bu bölümde kayıtlı öğrenciler var, önce öğrenciyi güncelleyin veya silin!")
+
+    imlec.execute("""
+        SELECT id
+        FROM ogretmenler
+        WHERE bolum_id = %s
+    """, (bolum_id,))
+
+    ogretmen_icin_sonuc = imlec.fetchone()
+
+    if ogretmen_icin_sonuc is not None:
+        baglanti.close()
+        raise HTTPException(status_code=409, detail="Bu bölümde kayıtlı öğretmenler var, önce öğretmeni güncelleyin veya silin!")
+
+    imlec.execute("""
+    DELETE FROM bolumler WHERE id = %s""", (bolum_id,))
+
+    mesaj = f"{bolum_id} numaraya sahip bölüm başarıyla silindi"
+
+    baglanti.commit()
+    baglanti.close()
+    return {"mesaj": mesaj}
+
+        
