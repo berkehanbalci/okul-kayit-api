@@ -28,4 +28,4 @@ class Fakulte(BaseModel):
 
 class Bolum(BaseModel):
     ad: str
-    fakulte_id = int
+    fakulte_id: int
