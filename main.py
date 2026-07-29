@@ -134,9 +134,9 @@ def detayli_ogrenci_fakulte_raporu():
     imlec = baglanti.cursor()
     imlec.execute("""
         SELECT f.id AS fakulte_id, f.ad AS fakulte_adi, b.id AS bolum_id, b.ad AS bolum_adi, COUNT(ogrci.id) AS toplam_ogrenci
-        FROM ogrenciler ogrci
-        INNER JOIN fakulteler f ON ogrci.fakulte_id = f.id
-        INNER JOIN bolumler b ON ogrci.bolum_id = b.id
+        FROM fakulteler f
+        LEFT JOIN bolumler b ON b.fakulte_id = f.id
+        LEFT JOIN ogrenciler ogrci ON ogrci.bolum_id = b.id
         GROUP BY f.id, f.ad, b.id, b.ad
         ORDER BY f.ad ASC
     """)
@@ -403,11 +403,69 @@ def bolum_ekle(bolum: Bolum, kullanici_adi: str = Depends(token_dogrula)):
         baglanti.close()
         raise HTTPException(status_code=409, detail=f"{bolum.ad} bölümü zaten mevcut!")
 
-    else:
-        imlec.execute("""
-        INSERT INTO bolumler (ad) VALUES (%s)""", (bolum.ad,))
+    imlec.execute("SELECT id FROM fakulteler WHERE id = %s", (bolum.fakulte_id,))
+    if imlec.fetchone() is None:
+        baglanti.close()
+        raise HTTPException(status_code=404, detail=f"{bolum.fakulte_id} id numaralı fakülte bulunamadı!")
+    
+    imlec.execute("""
+    INSERT INTO bolumler (ad, fakulte_id) VALUES (%s, %s)""", (bolum.ad, bolum.fakulte_id))
 
-        mesaj = f"{bolum.ad} bölümü sisteme eklendi"
+    mesaj = f"{bolum.ad} bölümü sisteme eklendi"
+
+    baglanti.commit()
+    baglanti.close()
+    return {"mesaj": mesaj}
+
+@app.put("/ogrenciler/guncelle")
+def ogrenci_guncelle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogrula)):
+    baglanti = veritabani_baglan()
+    imlec = baglanti.cursor()
+
+    imlec.execute("""
+        SELECT id
+        FROM ogrenciler
+        Where id = %s
+    """, (ogrenci.ogrenci_id,))
+
+    sonuc = imlec.fetchone()
+
+    if sonuc is None:
+        baglanti.close()
+        raise HTTPException(status_code=404, detail=f"{ogrenci.ogrenci_id} numaralı öğrenci bulunamadı!")
+
+    imlec.execute("""
+        SELECT id
+        FROM fakulteler
+        WHERE id = %s
+    """, (ogrenci.fakulte_id,))    
+
+    fakulte_sonuc = imlec.fetchone()
+
+    if fakulte_sonuc is None:
+        baglanti.close()
+        raise HTTPException(status_code=404, detail=f"{ogrenci.fakulte_id} numaralı fakulte id'si mevcut değildir!")
+
+    fakulte_id = fakulte_sonuc[0]
+    imlec.execute("""
+        SELECT id
+        FROM bolumler
+        WHERE id = %s
+    """, (ogrenci.bolum_id,))
+
+    bolum_sonuc = imlec.fetchone()
+
+    if bolum_sonuc is None:
+        baglanti.close()
+        raise HTTPException(status_code=404, detail=f"{ogrenci.bolum_id} numaralı bolum id'si mevcut değildir!")
+
+    bolum_id = bolum_sonuc[0]
+
+    imlec.execute("""
+    UPDATE ogrenciler SET ad = %s, soyad = %s, telefon_no = %s, mail = %s, fakulte_id = %s, bolum_id = %s, guncel_donem = %s
+    WHERE id = %s""", (ogrenci.ad, ogrenci.soyad, ogrenci.telefon_no, ogrenci.mail, fakulte_id, bolum_id, ogrenci.guncel_donem, ogrenci.ogrenci_id))
+
+    mesaj = f"{ogrenci.ogrenci_id} numaralı öğrenci başarıyla güncellendi"
 
     baglanti.commit()
     baglanti.close()
