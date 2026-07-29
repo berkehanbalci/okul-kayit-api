@@ -27,7 +27,8 @@ def veritabani_hazirla():
     imlec.execute("""
         CREATE TABLE IF NOT EXISTS bolumler(
             id SERIAL PRIMARY KEY,
-            ad VARCHAR(100) UNIQUE)
+            ad VARCHAR(100) UNIQUE,
+            fakulte_id INTEGER REFERENCES fakulteler(id))
     """)
 
     imlec.execute("""
