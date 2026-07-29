@@ -4,18 +4,22 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-def veritabani_baglan():
+def veritabani_baglan(dbname: str = None):
+  
+    if dbname is None:
+        dbname = os.getenv("DB_NAME")
+ 
     return psycopg2.connect(
         host=os.getenv("DB_HOST"),
         port=os.getenv("DB_PORT"),
-        dbname=os.getenv("DB_NAME"),
+        dbname=dbname,
         user=os.getenv("DB_USER"),
         password=os.getenv("DB_PASSWORD")
     )
-
-
-def veritabani_hazirla():
-    baglanti = veritabani_baglan()
+ 
+ 
+def veritabani_hazirla(dbname: str = None):
+    baglanti = veritabani_baglan(dbname)
     imlec = baglanti.cursor()
     
     imlec.execute("""
