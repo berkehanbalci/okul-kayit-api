@@ -273,8 +273,8 @@ def yeni_ogrenci_ekle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogru
             imlec.execute("""
                 SELECT id
                 FROM bolumler
-                WHERE id = %s
-            """, (ogrenci.bolum_id,)
+                WHERE id = %s AND fakulte_id = %s
+            """, (ogrenci.bolum_id, ogrenci.fakulte_id)
             )
             ogrenci_bolum_sonuc = imlec.fetchone()
 
@@ -288,7 +288,7 @@ def yeni_ogrenci_ekle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogru
                 mesaj = f"{ogrenci.ogrenci_id} numaralı öğrenci sisteme eklendi"
             else:
                 baglanti.close()
-                raise HTTPException(status_code=404, detail=f"{ogrenci.bolum_id} id numaralı bölüm bulunamadı!")    
+                raise HTTPException(status_code=404, detail=f"{ogrenci.bolum_id} id'li bölüm bu fakülteye ait değil veya bulunamadı!")  
         
         else:
             baglanti.close()
@@ -331,8 +331,8 @@ def yeni_ogretmen_ekle(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_do
             imlec.execute("""
                 SELECT id
                 FROM bolumler
-                WHERE id = %s
-            """, (ogretmen.bolum_id,)
+                WHERE id = %s AND fakulte_id = %s
+                """, (ogretmen.bolum_id, ogretmen.fakulte_id)
             )
 
             ogretmen_bolum_sonuc = imlec.fetchone()
@@ -348,7 +348,7 @@ def yeni_ogretmen_ekle(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_do
                 mesaj = f"{ogretmen.ogretmen_id} numaralı öğretmen sisteme eklendi"
             else:
                 baglanti.close()
-                raise HTTPException(status_code=404, detail=f"{ogretmen.bolum_id} id numaralı bölüm bulunamadı!")
+                raise HTTPException(status_code=404, detail=f"{ogretmen.bolum_id} id'li bölüm bu fakülteye ait değil veya bulunamadı!")
         
         else:
             baglanti.close()
@@ -450,14 +450,14 @@ def ogrenci_guncelle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogrul
     imlec.execute("""
         SELECT id
         FROM bolumler
-        WHERE id = %s
-    """, (ogrenci.bolum_id,))
+        WHERE id = %s AND fakulte_id = %s
+        """, (ogrenci.bolum_id, ogrenci.fakulte_id))
 
     bolum_sonuc = imlec.fetchone()
 
     if bolum_sonuc is None:
         baglanti.close()
-        raise HTTPException(status_code=404, detail=f"{ogrenci.bolum_id} numaralı bolum id'si mevcut değildir!")
+        raise HTTPException(status_code=404, detail=f"{ogrenci.bolum_id} id'li bölüm bu fakülteye ait değil veya bulunamadı!")
 
     bolum_id = bolum_sonuc[0]
 
@@ -505,14 +505,14 @@ def ogretmen_guncelle(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_dog
     imlec.execute("""
         SELECT id
         FROM bolumler
-        WHERE id = %s
-    """, (ogretmen.bolum_id,))
+        WHERE id = %s AND fakulte_id = %s
+        """, (ogretmen.bolum_id, ogretmen.fakulte_id))
 
     bolum_sonuc = imlec.fetchone()
 
     if bolum_sonuc is None:
         baglanti.close()
-        raise HTTPException(status_code=404, detail=f"{ogretmen.bolum_id} numaralı bolum id'si mevcut değildir!")
+        raise HTTPException(status_code=404, detail=f"{ogretmen.bolum_id} id'li bölüm bu fakülteye ait değil veya bulunamadı!")
 
     bolum_id = bolum_sonuc[0]
 
