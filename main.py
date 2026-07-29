@@ -593,7 +593,7 @@ def bolum_sil(bolum_id: int, kullanici_adi: str = Depends(token_dogrula)):
 
     if ogrenci_icin_sonuc is not None:
         baglanti.close()
-        raise HTTPException(status_code=409, detail="Bu bölümde kayıtlı öğrenciler var, önce öğrenciyi güncelleyin veya silin!")
+        raise HTTPException(status_code=409, detail="Bu bölümde kayıtlı öğrenci var, önce öğrenciyi güncelleyin veya silin!")
 
     imlec.execute("""
         SELECT id
@@ -605,7 +605,7 @@ def bolum_sil(bolum_id: int, kullanici_adi: str = Depends(token_dogrula)):
 
     if ogretmen_icin_sonuc is not None:
         baglanti.close()
-        raise HTTPException(status_code=409, detail="Bu bölümde kayıtlı öğretmenler var, önce öğretmeni güncelleyin veya silin!")
+        raise HTTPException(status_code=409, detail="Bu bölümde kayıtlı öğretmen var, önce öğretmeni güncelleyin veya silin!")
 
     imlec.execute("""
     DELETE FROM bolumler WHERE id = %s""", (bolum_id,))
@@ -616,4 +616,52 @@ def bolum_sil(bolum_id: int, kullanici_adi: str = Depends(token_dogrula)):
     baglanti.close()
     return {"mesaj": mesaj}
 
-        
+@app.delete("/fakulte/sil")
+def fakulte_sil(fakulte_id: int, kullanici_adi: str = Depends(token_dogrula)):
+    baglanti = veritabani_baglan()
+    imlec = baglanti.cursor()
+
+    imlec.execute("""
+        SELECT id
+        FROM ogrenciler
+        WHERE fakulte_id = %s
+    """, (fakulte_id,))
+
+    ogrenci_icin_sonuc = imlec.fetchone()
+
+    if ogrenci_icin_sonuc is not None:
+        baglanti.close()
+        raise HTTPException(status_code=409, detail="Bu fakültede öğrenci var, önce öğrenciyi güncelleyin veya silin!")
+
+    imlec.execute("""
+        SELECT id
+        FROM ogretmenler
+        WHERE fakulte_id = %s
+    """, (fakulte_id,))
+
+    ogretmen_icin_sonuc = imlec.fetchone()
+
+    if ogretmen_icin_sonuc is not None:
+        baglanti.close()
+        raise HTTPException(status_code=409, detail="Bu fakültede öğretmen var, önce öğretmeni güncelleyin veya silin!")
+
+    imlec.execute("""
+        SELECT id
+        FROM bolumler
+        WHERE fakulte_id = %s
+    """, (fakulte_id,))
+
+    bolum_icin_sonuc = imlec.fetchone()
+
+    if bolum_icin_sonuc is not None:
+        baglanti.close()
+        raise HTTPException(status_code=409, detail="Bu fakültede bölüm var, önce bölümü güncelleyin veya silin!")
+
+    imlec.execute("""
+    DELETE FROM fakulteler WHERE id = %s""", (fakulte_id,))
+
+    mesaj = f"{fakulte_id} numaralı fakülte başarıyla silindi"
+
+    baglanti.commit()
+    baglanti.close()
+    return {"mesaj": mesaj}      
