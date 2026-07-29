@@ -469,4 +469,59 @@ def ogrenci_guncelle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogrul
 
     baglanti.commit()
     baglanti.close()
-    return {"mesaj": mesaj}    
+    return {"mesaj": mesaj}
+
+@app.put("/ogretmenler/guncelle")
+def ogretmen_guncelle(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_dogrula)):
+    baglanti = veritabani_baglan()
+    imlec = baglanti.cursor()
+
+    imlec.execute("""
+        SELECT id
+        FROM ogretmenler
+        WHERE id = %s
+    """, (ogretmen.ogretmen_id,))
+
+    sonuc = imlec.fetchone()
+
+    if sonuc is None:
+        baglanti.close()
+        raise HTTPException(status_code=404, detail=f"{ogretmen.ogretmen_id} numaralı öğretmen bulunamadı")
+
+    imlec.execute("""
+        SELECT id
+        FROM fakulteler
+        WHERE id = %s
+    """, (ogretmen.fakulte_id,))
+
+    fakulte_sonuc = imlec.fetchone()
+
+    if fakulte_sonuc is None:
+        baglanti.close()
+        raise HTTPException(status_code=404, detail=f"{ogretmen.fakulte_id} numaralı fakulte id'si mevcut değildir!")
+
+    fakulte_id = fakulte_sonuc[0]
+
+    imlec.execute("""
+        SELECT id
+        FROM bolumler
+        WHERE id = %s
+    """, (ogretmen.bolum_id,))
+
+    bolum_sonuc = imlec.fetchone()
+
+    if bolum_sonuc is None:
+        baglanti.close()
+        raise HTTPException(status_code=404, detail=f"{ogretmen.bolum_id} numaralı bolum id'si mevcut değildir!")
+
+    bolum_id = bolum_sonuc[0]
+
+    imlec.execute("""
+    UPDATE ogretmenler SET ad = %s, soyad = %s, telefon_no = %s, mail = %s, fakulte_id = %s, bolum_id = %s
+    WHERE id = %s""", (ogretmen.ad, ogretmen.soyad, ogretmen.telefon_no, ogretmen.mail, fakulte_id, bolum_id, ogretmen.ogretmen_id))
+
+    mesaj = f"{ogretmen.ogretmen_id} numaralı öğretmen başarıyla güncellendi"    
+
+    baglanti.commit()
+    baglanti.close()
+    return {"mesaj": mesaj}
