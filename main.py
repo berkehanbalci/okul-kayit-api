@@ -525,3 +525,55 @@ def ogretmen_guncelle(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_dog
     baglanti.commit()
     baglanti.close()
     return {"mesaj": mesaj}
+
+@app.delete("/ogrenci/sil")
+def ogrenci_sil(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogrula)):
+    baglanti = veritabani_baglan()
+    imlec = baglanti.cursor()
+
+    imlec.execute("""
+        SELECT id
+        FROM ogrenciler
+        WHERE id = %s
+    """, (ogrenci.ogrenci_id,))
+
+    sonuc = imlec.fetchone()
+
+    if sonuc is None:
+        baglanti.close()
+        raise HTTPException(status_code=404, detail=f"{ogrenci.ogrenci_id} numaralı öğrenci bulunamadı!")
+
+    imlec.execute("""
+    DELETE FROM ogrenciler WHERE id = %s""", (ogrenci.ogrenci_id,))
+
+    mesaj = f"{ogrenci.ogrenci_id} numaralı öğrenci başarıyla silindi"    
+
+    baglanti.commit()
+    baglanti.close()
+    return {"mesaj": mesaj}
+
+@app.delete("/ogretmen/sil")
+def ogretmen_sil(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_dogrula)):
+    baglanti = veritabani_baglan()
+    imlec = baglanti.cursor()
+
+    imlec.execute("""
+        SELECT id
+        FROM ogretmenler
+        WHERE id = %s
+    """, (ogretmen.ogretmen_id,))
+
+    sonuc = imlec.fetchone()
+
+    if sonuc is None:
+        baglanti.close()
+        raise HTTPException(status_code=404, detail=f"{ogretmen.ogretmen_id} numaralı öğretmen bulunamadı")
+
+    imlec.execute("""
+    DELETE FROM ogretmenler WHERE id = %s""", (ogretmen.ogretmen_id,))
+
+    mesaj = f"{ogretmen.ogretmen_id} numaralı öğretmen başarıyla silindi"
+
+    baglanti.commit()
+    baglanti.close()
+    return {"mesaj": mesaj}         
