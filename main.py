@@ -527,7 +527,7 @@ def ogretmen_guncelle(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_dog
     return {"mesaj": mesaj}
 
 @app.delete("/ogrenci/sil")
-def ogrenci_sil(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogrula)):
+def ogrenci_sil(ogrenci_id : int, kullanici_adi: str = Depends(token_dogrula)):
     baglanti = veritabani_baglan()
     imlec = baglanti.cursor()
 
@@ -535,25 +535,25 @@ def ogrenci_sil(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogrula)):
         SELECT id
         FROM ogrenciler
         WHERE id = %s
-    """, (ogrenci.ogrenci_id,))
+    """, (ogrenci_id,))
 
     sonuc = imlec.fetchone()
 
     if sonuc is None:
         baglanti.close()
-        raise HTTPException(status_code=404, detail=f"{ogrenci.ogrenci_id} numaralı öğrenci bulunamadı!")
+        raise HTTPException(status_code=404, detail=f"{ogrenci_id} numaralı öğrenci bulunamadı!")
 
     imlec.execute("""
-    DELETE FROM ogrenciler WHERE id = %s""", (ogrenci.ogrenci_id,))
+    DELETE FROM ogrenciler WHERE id = %s""", (ogrenci_id,))
 
-    mesaj = f"{ogrenci.ogrenci_id} numaralı öğrenci başarıyla silindi"    
+    mesaj = f"{ogrenci_id} numaralı öğrenci başarıyla silindi"    
 
     baglanti.commit()
     baglanti.close()
     return {"mesaj": mesaj}
 
 @app.delete("/ogretmen/sil")
-def ogretmen_sil(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_dogrula)):
+def ogretmen_sil(ogretmen_id: int, kullanici_adi: str = Depends(token_dogrula)):
     baglanti = veritabani_baglan()
     imlec = baglanti.cursor()
 
@@ -561,18 +561,18 @@ def ogretmen_sil(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_dogrula)
         SELECT id
         FROM ogretmenler
         WHERE id = %s
-    """, (ogretmen.ogretmen_id,))
+    """, (ogretmen_id,))
 
     sonuc = imlec.fetchone()
 
     if sonuc is None:
         baglanti.close()
-        raise HTTPException(status_code=404, detail=f"{ogretmen.ogretmen_id} numaralı öğretmen bulunamadı")
+        raise HTTPException(status_code=404, detail=f"{ogretmen_id} numaralı öğretmen bulunamadı")
 
     imlec.execute("""
-    DELETE FROM ogretmenler WHERE id = %s""", (ogretmen.ogretmen_id,))
+    DELETE FROM ogretmenler WHERE id = %s""", (ogretmen_id,))
 
-    mesaj = f"{ogretmen.ogretmen_id} numaralı öğretmen başarıyla silindi"
+    mesaj = f"{ogretmen_id} numaralı öğretmen başarıyla silindi"
 
     baglanti.commit()
     baglanti.close()
