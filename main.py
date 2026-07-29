@@ -190,9 +190,9 @@ def detayli_ogretmen_fakulte_raporu():
 
     imlec.execute("""
         SELECT f.id AS fakulte_id, f.ad AS fakulte_adi, b.id AS bolum_id, b.ad AS bolum_adi, COUNT(ogrme.id) AS toplam_ogretmen
-        FROM ogretmenler ogrme
-        INNER JOIN fakulteler f ON ogrme.fakulte_id = f.id
-        INNER JOIN bolumler b ON ogrme.bolum_id = b.id
+        FROM fakulteler f
+        LEFT JOIN bolumler b ON b.fakulte_id = f.id
+        LEFT JOIN ogretmenler ogrme ON ogrme.bolum_id = b.id
         GROUP BY f.id, f.ad, b.id, b.ad
         ORDER BY f.ad ASC
     """)
