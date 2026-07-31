@@ -29,3 +29,20 @@ class Fakulte(BaseModel):
 class Bolum(BaseModel):
     ad: str
     fakulte_id: int
+
+class OgretmenGuncelle(BaseModel):
+    ad: str
+    soyad: str
+    telefon_no: str
+    mail: EmailStr
+    fakulte_id: int
+    bolum_id: int
+
+class OgrenciGuncelle(BaseModel):
+    ad: str
+    soyad: str
+    telefon_no: str
+    mail: EmailStr
+    fakulte_id: int
+    bolum_id: int
+    guncel_donem: str

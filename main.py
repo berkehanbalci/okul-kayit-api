@@ -1,5 +1,5 @@
 from database import veritabani_hazirla, veritabani_baglan
-from models import Ogrenci, Ogretmen, Fakulte, Bolum
+from models import Ogrenci, Ogretmen, Fakulte, Bolum, OgrenciGuncelle, OgretmenGuncelle
 from fastapi import FastAPI, HTTPException, Depends
 from auth import router as auth_router, token_dogrula
 
@@ -417,8 +417,8 @@ def bolum_ekle(bolum: Bolum, kullanici_adi: str = Depends(token_dogrula)):
     baglanti.close()
     return {"mesaj": mesaj}
 
-@app.put("/ogrenciler/guncelle")
-def ogrenci_guncelle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogrula)):
+@app.put("/ogrenciler/guncelle/{ogrenci_id}")
+def ogrenci_guncelle(ogrenci_id: int, ogrenci: OgrenciGuncelle, kullanici_adi: str = Depends(token_dogrula)):
     baglanti = veritabani_baglan()
     imlec = baglanti.cursor()
 
@@ -426,13 +426,13 @@ def ogrenci_guncelle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogrul
         SELECT id
         FROM ogrenciler
         Where id = %s
-    """, (ogrenci.ogrenci_id,))
+    """, (ogrenci_id,))
 
     sonuc = imlec.fetchone()
 
     if sonuc is None:
         baglanti.close()
-        raise HTTPException(status_code=404, detail=f"{ogrenci.ogrenci_id} numaralı öğrenci bulunamadı!")
+        raise HTTPException(status_code=404, detail=f"{ogrenci_id} numaralı öğrenci bulunamadı!")
 
     imlec.execute("""
         SELECT id
@@ -465,14 +465,14 @@ def ogrenci_guncelle(ogrenci: Ogrenci, kullanici_adi: str = Depends(token_dogrul
     UPDATE ogrenciler SET ad = %s, soyad = %s, telefon_no = %s, mail = %s, fakulte_id = %s, bolum_id = %s, guncel_donem = %s
     WHERE id = %s""", (ogrenci.ad, ogrenci.soyad, ogrenci.telefon_no, ogrenci.mail, fakulte_id, bolum_id, ogrenci.guncel_donem, ogrenci.ogrenci_id))
 
-    mesaj = f"{ogrenci.ogrenci_id} numaralı öğrenci başarıyla güncellendi"
+    mesaj = f"{ogrenci_id} numaralı öğrenci başarıyla güncellendi"
 
     baglanti.commit()
     baglanti.close()
     return {"mesaj": mesaj}
 
-@app.put("/ogretmenler/guncelle")
-def ogretmen_guncelle(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_dogrula)):
+@app.put("/ogretmenler/guncelle/{ogretmen_id}")
+def ogretmen_guncelle(ogretmen_id: int, ogretmen: OgretmenGuncelle, kullanici_adi: str = Depends(token_dogrula)):
     baglanti = veritabani_baglan()
     imlec = baglanti.cursor()
 
@@ -480,13 +480,13 @@ def ogretmen_guncelle(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_dog
         SELECT id
         FROM ogretmenler
         WHERE id = %s
-    """, (ogretmen.ogretmen_id,))
+    """, (ogretmen_id,))
 
     sonuc = imlec.fetchone()
 
     if sonuc is None:
         baglanti.close()
-        raise HTTPException(status_code=404, detail=f"{ogretmen.ogretmen_id} numaralı öğretmen bulunamadı")
+        raise HTTPException(status_code=404, detail=f"{ogretmen_id} numaralı öğretmen bulunamadı")
 
     imlec.execute("""
         SELECT id
@@ -520,13 +520,13 @@ def ogretmen_guncelle(ogretmen: Ogretmen, kullanici_adi: str = Depends(token_dog
     UPDATE ogretmenler SET ad = %s, soyad = %s, telefon_no = %s, mail = %s, fakulte_id = %s, bolum_id = %s
     WHERE id = %s""", (ogretmen.ad, ogretmen.soyad, ogretmen.telefon_no, ogretmen.mail, fakulte_id, bolum_id, ogretmen.ogretmen_id))
 
-    mesaj = f"{ogretmen.ogretmen_id} numaralı öğretmen başarıyla güncellendi"    
+    mesaj = f"{ogretmen_id} numaralı öğretmen başarıyla güncellendi"    
 
     baglanti.commit()
     baglanti.close()
     return {"mesaj": mesaj}
 
-@app.delete("/ogrenci/sil")
+@app.delete("/ogrenci/sil/{ogrenci_id}")
 def ogrenci_sil(ogrenci_id : int, kullanici_adi: str = Depends(token_dogrula)):
     baglanti = veritabani_baglan()
     imlec = baglanti.cursor()
@@ -552,7 +552,7 @@ def ogrenci_sil(ogrenci_id : int, kullanici_adi: str = Depends(token_dogrula)):
     baglanti.close()
     return {"mesaj": mesaj}
 
-@app.delete("/ogretmen/sil")
+@app.delete("/ogretmen/sil/{ogretmen_id}")
 def ogretmen_sil(ogretmen_id: int, kullanici_adi: str = Depends(token_dogrula)):
     baglanti = veritabani_baglan()
     imlec = baglanti.cursor()
@@ -578,7 +578,7 @@ def ogretmen_sil(ogretmen_id: int, kullanici_adi: str = Depends(token_dogrula)):
     baglanti.close()
     return {"mesaj": mesaj}
 
-@app.delete("/bolum/sil")
+@app.delete("/bolum/sil/{bolum_id}")
 def bolum_sil(bolum_id: int, kullanici_adi: str = Depends(token_dogrula)):
     baglanti = veritabani_baglan()
     imlec = baglanti.cursor()
@@ -621,7 +621,7 @@ def bolum_sil(bolum_id: int, kullanici_adi: str = Depends(token_dogrula)):
     baglanti.close()
     return {"mesaj": mesaj}
 
-@app.delete("/fakulte/sil")
+@app.delete("/fakulte/sil/{fakulte_id}")
 def fakulte_sil(fakulte_id: int, kullanici_adi: str = Depends(token_dogrula)):
     baglanti = veritabani_baglan()
     imlec = baglanti.cursor()
