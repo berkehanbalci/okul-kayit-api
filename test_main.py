@@ -608,6 +608,163 @@ def test_olmayan_bolum_girilirse_ogrenci_guncellenemez(client, token):
     assert cevap.status_code == 404
 
 
+def test_ogretmen_guncelle(client, token):
+
+    client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"},
+        headers=token
+    )
+
+    client.post("/bolumler",
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
+        headers=token
+    )
+
+    client.post("/ogretmenler",
+        json = {
+            "ogretmen_id": 1001,
+            "ad": "Ahmet",
+            "soyad": "Yılmaz",
+            "telefon_no": "05551112233",
+            "mail": "ahmet@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1
+        },
+        headers=token
+    )
+
+    cevap = client.put("/ogretmenler/guncelle/1001",
+        json = {
+            "ad": "Yeni Ad",
+            "soyad": "Yeni Soyad",
+            "telefon_no": "05551112233",
+            "mail": "yeni@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1
+        },
+        headers=token
+    )
+
+    assert cevap.status_code == 200
+
+def test_gecersiz_idye_sahip_ogretmen_guncellenemez(client, token):
+    
+    client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"},
+        headers=token
+    )
+
+    client.post("/bolumler",
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
+        headers=token
+    )
+
+    client.post("/ogretmenler",
+        json = {
+            "ogretmen_id": 1001,
+            "ad": "Ahmet",
+            "soyad": "Yılmaz",
+            "telefon_no": "05551112233",
+            "mail": "ahmet@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1
+        },
+        headers=token
+    )
+
+    cevap = client.put("/ogretmenler/guncelle/999999",
+        json = {
+            "ad": "Yeni Ad",
+            "soyad": "Yeni Soyad",
+            "telefon_no": "05551112233",
+            "mail": "yeni@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1
+        },
+        headers=token
+    )
+
+    assert cevap.status_code == 404
+
+def test_olmayan_fakulte_girilirse_ogretmen_guncellenemez(client, token):
+    
+    client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"},
+        headers=token
+    )
+
+    client.post("/bolumler",
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
+        headers=token
+    )
+
+    client.post("/ogretmenler",
+        json = {
+            "ogretmen_id": 1001,
+            "ad": "Ahmet",
+            "soyad": "Yılmaz",
+            "telefon_no": "05551112233",
+            "mail": "ahmet@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1
+        },
+        headers=token
+    )
+
+    cevap = client.put("/ogretmenler/guncelle/1001",
+        json = {
+            "ad": "Yeni Ad",
+            "soyad": "Yeni Soyad",
+            "telefon_no": "05551112233",
+            "mail": "yeni@ornek.com",
+            "fakulte_id": 9999,
+            "bolum_id": 1
+        },
+        headers=token
+    )
+
+    assert cevap.status_code == 404
+
+def test_olmayan_bolum_girilirse_ogretmen_guncellenemez(client, token):
+
+    client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"},
+        headers=token
+    )
+
+    client.post("/bolumler",
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
+        headers=token
+    )
+
+    client.post("/ogretmenler",
+        json = {
+            "ogretmen_id": 1001,
+            "ad": "Ahmet",
+            "soyad": "Yılmaz",
+            "telefon_no": "05551112233",
+            "mail": "ahmet@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1
+        },
+        headers=token
+    )
+
+    cevap = client.put("/ogretmenler/guncelle/1001",
+        json = {
+            "ad": "Yeni Ad",
+            "soyad": "Yeni Soyad",
+            "telefon_no": "05551112233",
+            "mail": "yeni@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 9999
+        },
+        headers=token
+    )
+
+    assert cevap.status_code == 404    
+
+
 
 
 
