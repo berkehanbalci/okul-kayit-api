@@ -14,8 +14,16 @@ def client():
     return TestClient(main.app)
 
 @pytest.fixture(autouse=True)
-def temiz_veritaban():
-    baglanti = veritabani_baglan(TEST_DB)
+def temiz_veritaban(monkeypatch):
+
+    orijinal_baglan = database.veritabani_baglan
+    def test_baglan(dbname=None):
+        return orijinal_baglan(TEST_DB)
+
+    monkeypatch.setattr(database, "veritabani_baglan", test_baglan)
+    monkeypatch.setattr(main, "veritabani_baglan", test_baglan)    
+
+    baglanti = orijinal_baglan(TEST_DB)
     imlec = baglanti.cursor()
 
     imlec.execute("""
@@ -24,7 +32,8 @@ def temiz_veritaban():
     baglanti.commit()
     baglanti.close()
 
-    veritabani_hazirla(TEST_DB)
+    orijinal_hazirla = veritabani_hazirla
+    orijinal_hazirla(TEST_DB)
 
     yield
 
