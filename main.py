@@ -463,7 +463,7 @@ def ogrenci_guncelle(ogrenci_id: int, ogrenci: OgrenciGuncelle, kullanici_adi: s
 
     imlec.execute("""
     UPDATE ogrenciler SET ad = %s, soyad = %s, telefon_no = %s, mail = %s, fakulte_id = %s, bolum_id = %s, guncel_donem = %s
-    WHERE id = %s""", (ogrenci.ad, ogrenci.soyad, ogrenci.telefon_no, ogrenci.mail, fakulte_id, bolum_id, ogrenci.guncel_donem, ogrenci.ogrenci_id))
+    WHERE id = %s""", (ogrenci.ad, ogrenci.soyad, ogrenci.telefon_no, ogrenci.mail, fakulte_id, bolum_id, ogrenci.guncel_donem, ogrenci_id))
 
     mesaj = f"{ogrenci_id} numaralı öğrenci başarıyla güncellendi"
 
@@ -518,7 +518,7 @@ def ogretmen_guncelle(ogretmen_id: int, ogretmen: OgretmenGuncelle, kullanici_ad
 
     imlec.execute("""
     UPDATE ogretmenler SET ad = %s, soyad = %s, telefon_no = %s, mail = %s, fakulte_id = %s, bolum_id = %s
-    WHERE id = %s""", (ogretmen.ad, ogretmen.soyad, ogretmen.telefon_no, ogretmen.mail, fakulte_id, bolum_id, ogretmen.ogretmen_id))
+    WHERE id = %s""", (ogretmen.ad, ogretmen.soyad, ogretmen.telefon_no, ogretmen.mail, fakulte_id, bolum_id, ogretmen_id))
 
     mesaj = f"{ogretmen_id} numaralı öğretmen başarıyla güncellendi"    
 
