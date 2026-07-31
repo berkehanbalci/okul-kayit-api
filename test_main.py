@@ -765,7 +765,114 @@ def test_olmayan_bolum_girilirse_ogretmen_guncellenemez(client, token):
     assert cevap.status_code == 404    
 
 
+def test_kayit_basarili(client):
+    
+    cevap = client.post("/kayit",
+        json = {
+            "kullanici_adi": "yeni_admin",
+            "sifre": "sifre123"
+        }
+    )
 
+    assert cevap.status_code == 200
 
+def test_ayni_kullanici_iki_kez_kayit_olamaz(client):
 
+    client.post("/kayit",
+        json = {
+            "kullanici_adi": "yeni_admin",
+            "sifre": "sifre123"
+        }
+    )
 
+    cevap = client.post("/kayit",
+        json = {
+            "kullanici_adi": "yeni_admin",
+            "sifre": "yeniparola"
+        }
+    )
+
+    assert cevap.status_code == 409
+
+def test_giris_basarili_token_donuyor(client):
+    
+    client.post("/kayit",
+        json = {
+            "kullanici_adi": "yeni_admin",
+            "sifre": "sifre123"
+        }
+    )
+
+    cevap = client.post("/giris",
+        json = {
+            "kullanici_adi": "yeni_admin",
+            "sifre": "sifre123"
+        }
+    )
+
+    assert cevap.status_code == 200
+    assert "access_token" in cevap.json()
+
+def test_yanlis_sifre_ile_giris_reddedilir(client):
+
+    client.post("/kayit",
+        json = {
+            "kullanici_adi": "yeni_admin",
+            "sifre": "sifre123"
+        }
+    )
+
+    cevap = client.post("/giris",
+        json = {
+            "kullanici_adi": "yeni_admin",
+            "sifre": "yanlis_sifre123"
+        }
+    )
+
+    assert cevap.status_code == 401
+
+def test_olmayan_kullanici_giris_yapamaz(client):
+
+    client.post("/kayit",
+        json = {
+            "kullanici_adi": "yeni_admin",
+            "sifre": "sifre123"
+        }
+    )
+
+    cevap = client.post("/giris",
+        json = {
+            "kullanici_adi": "sahte_admin",
+            "sifre": "sifre123"
+        }
+    )
+
+    cevap.status_code == 401
+
+def test_tokensiz_korumali_endpoint_reddedilir(client):
+
+    cevap = client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"}
+    )
+
+    assert cevap.status_code == 401
+
+def test_yanlis_token_ile_reddedilir(client):
+
+    sahte_header = {"Authorization": "Bearer sahte_token_123"}
+
+    cevap = client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"},
+        headers = sahte_header
+    )
+
+    assert cevap.status_code == 401
+
+def test_gecerli_token_ile_erisim_saglanir(client, token):
+
+    cevap = client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"},
+        headers=token
+    )
+
+    assert cevap.status_code == 200
