@@ -85,7 +85,7 @@ def test_ogrenci_ekle(client, token):
     )
 
     client.post("/bolumler",
-        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": "1"},
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
         headers=token
     )
 
@@ -114,7 +114,7 @@ def test_ayni_ogrenci_id_iki_kez_eklenemez(client, token):
     )
 
     client.post("/bolumler",
-        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": "1"},
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
         headers=token
     )
 
@@ -197,7 +197,7 @@ def test_ogretmen_ekle(client, token):
     )
 
     client.post("/bolumler",
-        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": "1"},
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
         headers=token
     )
 
@@ -225,7 +225,7 @@ def test_ayni_ogretmen_id_iki_kez_eklenemez(client, token):
     )
 
     client.post("/bolumler",
-        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": "1"},
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
         headers=token
     )
 
@@ -319,7 +319,7 @@ def test_fakultenin_icinde_bolum_varsa_silinemez(client, token):
     )
 
     client.post("/bolumler",
-        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": "1"},
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
         headers=token
     )
 
@@ -335,7 +335,7 @@ def test_fakultenin_icinde_ogrenci_varsa_silinemez(client, token):
     )
 
     client.post("/bolumler",
-        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": "1"},
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
         headers=token
     )
 
@@ -365,7 +365,7 @@ def test_bolum_sil(client, token):
     )
 
     client.post("/bolumler",
-        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": "1"},
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
         headers=token
     )
 
@@ -375,6 +375,240 @@ def test_bolum_sil(client, token):
 
     tekrar = client.delete("/bolum/sil/1", headers=token)
     assert tekrar.status_code == 404
+
+def test_ogrenci_sil(client,token):
+
+    client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"},
+        headers=token
+    )
+
+    client.post("/bolumler",
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
+        headers=token
+    )
+
+    client.post("/ogrenciler",
+        json = {
+            "ogrenci_id": 1001,
+            "ad": "Ahmet",
+            "soyad": "Yılmaz",
+            "telefon_no": "05551112233",
+            "mail": "ahmet@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1,
+            "guncel_donem": "1"
+        },
+        headers=token
+    )
+
+    cevap = client.delete("/ogrenci/sil/1001", headers=token)
+
+    assert cevap.status_code == 200
+
+    tekrar = client.delete("/ogrenci/sil/1001", headers=token)
+
+    assert tekrar.status_code == 404
+
+def test_ogretmen_sil(client, token):
+
+    client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"},
+        headers=token
+    )
+
+    client.post("/bolumler",
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
+        headers=token
+    )
+
+    client.post("/ogretmenler",
+        json = {
+            "ogretmen_id": 1001,
+            "ad": "Ahmet",
+            "soyad": "Yılmaz",
+            "telefon_no": "05551112233",
+            "mail": "ahmet@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1
+        },
+        headers=token
+    )
+
+    cevap = client.delete("/ogretmen/sil/1001", headers=token)
+
+    assert cevap.status_code == 200
+
+    tekrar = client.delete("/ogretmen/sil/1001", headers=token)
+
+    assert tekrar.status_code == 404
+
+def test_ogrenci_guncelle(client, token):
+
+    client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"},
+        headers=token
+    )
+
+    client.post("/bolumler",
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
+        headers=token
+    )
+
+    client.post("/ogrenciler",
+        json = {
+            "ogrenci_id": 1001,
+            "ad": "Ahmet",
+            "soyad": "Yılmaz",
+            "telefon_no": "05551112233",
+            "mail": "ahmet@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1,
+            "guncel_donem": "1"
+        },
+        headers=token
+    )
+
+    cevap = client.put("/ogrenciler/guncelle/1001",
+        json = {
+            "ad": "Yeni Ad",
+            "soyad": "Yeni Soyad",
+            "telefon_no": "05551112233",
+            "mail": "yeni@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1,
+            "guncel_donem": "Yeni"
+        },
+        headers=token
+    )
+
+    assert cevap.status_code == 200
+
+def test_gecersiz_idye_sahip_ogrenci_guncellenemez(client, token):
+    
+    client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"},
+        headers=token
+    )
+
+    client.post("/bolumler",
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
+        headers=token
+    )
+
+    client.post("/ogrenciler",
+        json = {
+            "ogrenci_id": 1001,
+            "ad": "Ahmet",
+            "soyad": "Yılmaz",
+            "telefon_no": "05551112233",
+            "mail": "ahmet@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1,
+            "guncel_donem": "1"
+        },
+        headers=token
+    )
+
+    cevap = client.put("/ogrenciler/guncelle/999999",
+        json = {
+            "ad": "Yeni Ad",
+            "soyad": "Yeni Soyad",
+            "telefon_no": "05551112233",
+            "mail": "yeni@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1,
+            "guncel_donem": "Yeni"
+        },
+        headers=token
+    )
+
+    assert cevap.status_code == 404
+
+def test_olmayan_fakulte_girilirse_ogrenci_guncellenemez(client, token):
+    
+    client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"},
+        headers=token
+    )
+
+    client.post("/bolumler",
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
+        headers=token
+    )
+
+    client.post("/ogrenciler",
+        json = {
+            "ogrenci_id": 1001,
+            "ad": "Ahmet",
+            "soyad": "Yılmaz",
+            "telefon_no": "05551112233",
+            "mail": "ahmet@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1,
+            "guncel_donem": "1"
+        },
+        headers=token
+    )
+
+    cevap = client.put("/ogrenciler/guncelle/1001",
+        json = {
+            "ad": "Yeni Ad",
+            "soyad": "Yeni Soyad",
+            "telefon_no": "05551112233",
+            "mail": "yeni@ornek.com",
+            "fakulte_id": 9999,
+            "bolum_id": 1,
+            "guncel_donem": "Yeni"
+        },
+        headers=token
+    )
+
+    assert cevap.status_code == 404
+
+def test_olmayan_bolum_girilirse_ogrenci_guncellenemez(client, token):
+
+    client.post("/fakulteler",
+        json = {"ad": "Mühendislik Fakültesi"},
+        headers=token
+    )
+
+    client.post("/bolumler",
+        json = {"ad": "Bilgisiyar Mühendisliği", "fakulte_id": 1},
+        headers=token
+    )
+
+    client.post("/ogrenciler",
+        json = {
+            "ogrenci_id": 1001,
+            "ad": "Ahmet",
+            "soyad": "Yılmaz",
+            "telefon_no": "05551112233",
+            "mail": "ahmet@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 1,
+            "guncel_donem": "1"
+        },
+        headers=token
+    )
+
+    cevap = client.put("/ogrenciler/guncelle/1001",
+        json = {
+            "ad": "Yeni Ad",
+            "soyad": "Yeni Soyad",
+            "telefon_no": "05551112233",
+            "mail": "yeni@ornek.com",
+            "fakulte_id": 1,
+            "bolum_id": 9999,
+            "guncel_donem": "Yeni"
+        },
+        headers=token
+    )
+
+    assert cevap.status_code == 404
+
+
+
 
 
 
