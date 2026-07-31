@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 import database
 from database import veritabani_baglan, veritabani_hazirla
 import main
+import auth
 
 TEST_DB = "okul_kayit_test_db"
 
@@ -22,7 +23,8 @@ def temiz_veritaban(monkeypatch):
         return orijinal_baglan(TEST_DB)
 
     monkeypatch.setattr(database, "veritabani_baglan", test_baglan)
-    monkeypatch.setattr(main, "veritabani_baglan", test_baglan)    
+    monkeypatch.setattr(main, "veritabani_baglan", test_baglan)
+    monkeypatch.setattr(auth, "veritabani_baglan", test_baglan)
 
     baglanti = orijinal_baglan(TEST_DB)
     imlec = baglanti.cursor()
