@@ -303,12 +303,12 @@ def test_fakulte_sil(client ,token):
         headers=token
     )
 
-    cevap = client.delete("/fakulte/sil?fakulte_id=1", headers=token)
+    cevap = client.delete("/fakulte/sil/1", headers=token)
     
 
     assert cevap.status_code == 200
 
-    tekrar = client.delete("/fakulte/sil?fakulte_id=1", headers=token)
+    tekrar = client.delete("/fakulte/sil/1", headers=token)
     assert tekrar.status_code == 404
 
 def test_fakultenin_icinde_bolum_varsa_silinemez(client, token):
@@ -323,7 +323,7 @@ def test_fakultenin_icinde_bolum_varsa_silinemez(client, token):
         headers=token
     )
 
-    cevap = client.delete("/fakulte/sil?fakulte_id=1", headers=token)
+    cevap = client.delete("/fakulte/sil/1", headers=token)
 
     assert cevap.status_code == 409
 
@@ -353,7 +353,7 @@ def test_fakultenin_icinde_ogrenci_varsa_silinemez(client, token):
         headers=token
     )
 
-    cevap = client.delete("/fakulte/sil?fakulte_id=1", headers=token)
+    cevap = client.delete("/fakulte/sil/1", headers=token)
 
     assert cevap.status_code == 409
 
@@ -369,11 +369,11 @@ def test_bolum_sil(client, token):
         headers=token
     )
 
-    cevap = client.delete("/bolum/sil?bolum_id=1", headers=token)
+    cevap = client.delete("/bolum/sil/1", headers=token)
 
     assert cevap.status_code == 200
 
-    tekrar = client.delete("/bolum/sil?bolum_id=1", headers=token)
+    tekrar = client.delete("/bolum/sil/1", headers=token)
     assert tekrar.status_code == 404
 
 
