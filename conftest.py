@@ -1,6 +1,7 @@
 import os
 import pytest
 from fastapi.testclient import TestClient
+import database
 from database import veritabani_baglan, veritabani_hazirla
 import main
 
