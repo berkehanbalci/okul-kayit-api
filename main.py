@@ -583,6 +583,11 @@ def bolum_sil(bolum_id: int, kullanici_adi: str = Depends(token_dogrula)):
     baglanti = veritabani_baglan()
     imlec = baglanti.cursor()
 
+    imlec.execute("SELECT id FROM bolumler WHERE id = %s", (bolum_id,))
+    if imlec.fetchone() is None:
+        baglanti.close()
+        raise HTTPException(status_code=404, detail=f"{bolum_id} numaralı bölüm bulunamadı!")
+    
     imlec.execute("""
         SELECT id
         FROM ogrenciler
@@ -620,6 +625,11 @@ def bolum_sil(bolum_id: int, kullanici_adi: str = Depends(token_dogrula)):
 def fakulte_sil(fakulte_id: int, kullanici_adi: str = Depends(token_dogrula)):
     baglanti = veritabani_baglan()
     imlec = baglanti.cursor()
+
+    imlec.execute("SELECT id FROM fakulteler WHERE id = %s", (fakulte_id,))
+    if imlec.fetchone() is None:
+        baglanti.close()
+        raise HTTPException(status_code=404, detail=f"{fakulte_id} numaralı fakülte bulunamadı!")
 
     imlec.execute("""
         SELECT id
